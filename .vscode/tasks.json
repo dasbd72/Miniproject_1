@@ -1,0 +1,47 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "Calculator Recursion",
+			"command": "gcc",
+			"args": [
+				"main.c",
+				"parser.c",
+				"lex.c",
+				"codeGen.c",
+				"-o",
+				"calculator_recursion.exe"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}\\package\\calculator_recursion"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compiler: C:\\MinGW\\bin\\gcc.exe"
+		},
+		{
+			"type": "cppbuild",
+			"label": "Calculator Loop",
+			"command": "gcc",
+			"args": [
+				"main.c",
+				"parser.c",
+				"lex.c",
+				"codeGen.c",
+				"-o",
+				"calculator_loop.exe"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}\\package\\calculator_loop"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compiler: C:\\MinGW\\bin\\gcc.exe"
+		}
+	]
+}

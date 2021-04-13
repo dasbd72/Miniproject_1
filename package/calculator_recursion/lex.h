@@ -5,11 +5,12 @@
 
 // Token types
 typedef enum {
-    UNKNOWN, END, ENDFILE, 
+    UNKNOWN, END, ENDFILE,
     INT, ID,
     ADDSUB, MULDIV,
-    ASSIGN, 
-    LPAREN, RPAREN
+    ASSIGN, INCDEC,
+    LPAREN, RPAREN,
+    AND, OR, XOR
 } TokenSet;
 
 // Test if a token matches the current token 

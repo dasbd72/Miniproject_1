@@ -46,10 +46,30 @@ TokenSet getToken(void)
     } else if (c == ')') {
         strcpy(lexeme, ")");
         return RPAREN;
-    } else if (isalpha(c)) {
+    } else if (isalpha(c) || c == '_') {
+        lexeme[0] = c;
+        c = fgetc(stdin);
+        int i = 1;
+        while((isalpha(c) || isdigit(c) || c == '_') && i < MAXLEN){
+            lexeme[i] = c;
+            ++i;
+            c = fgetc(stdin);
+        }
+        ungetc(c, stdin);
+        lexeme[i] = '\0';
+        return ID;
+    } else if(c == '&'){
         lexeme[0] = c;
         lexeme[1] = '\0';
-        return ID;
+        return AND;
+    } else if(c == '^'){
+        lexeme[0] = c;
+        lexeme[1] = '\0';
+        return XOR;
+    } else if(c == '|'){
+        lexeme[0] = c;
+        lexeme[1] = '\0';
+        return OR;
     } else if (c == EOF) {
         return ENDFILE;
     } else {

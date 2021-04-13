@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "calculator_recursion",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "preLaunchTask": "Calculator Recursion",
+            "program": "${workspaceFolder}\\package\\calculator_recursion\\calculator_recursion.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "calculator_loop",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "preLaunchTask": "Calculator Loop",
+            "program": "${workspaceFolder}\\package\\calculator_loop\\calculator_loop.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal"
+        }
+    ]
+}

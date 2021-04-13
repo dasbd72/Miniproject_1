@@ -7,6 +7,8 @@
 int sbcount = 0;
 Symbol table[TBLSIZE];
 
+/* -------------------------------Operations------------------------------- */
+
 void initTable(void) {
     strcpy(table[0].name, "x");
     table[0].val = 0;
@@ -70,6 +72,117 @@ void freeTree(BTNode *root) {
     }
 }
 
+/* -------------------------------Grammar------------------------------- */
+
+// // statement        := END | assign_expr END 
+// void statement(void) {
+//     BTNode *retp = NULL;
+
+//     if (match(ENDFILE)) {
+//         exit(0);
+//     } else if (match(END)) {
+//         printf(">> ");
+//         advance();
+//     } else {
+//         retp = assign_expr();
+//         if (match(END)) {
+//             printf("%d\n", evaluateTree(retp));
+//             printf("Prefix traversal: ");
+//             printPrefix(retp);
+//             printf("\n");
+//             freeTree(retp);
+//             printf(">> ");
+//             advance();
+//         } else {
+//             error(SYNTAXERR);
+//         }
+//     }
+// }
+// // assign_expr      := ID ASSIGN assing_expr | or_expr
+// BTNode* assign_expr(){
+//     BTNode *node = NULL;
+
+//     if(match(ID)){
+//         BTNode *left = makeNode(ID, getLexeme());
+//     }
+// }
+// // or_expr          := xor_expr or_expr_tail 
+// // or_expr_tail     := OR xor_expr or_expr_tail | NiL 
+// // xor_expr         := and_expr xor_expr_tail 
+// // xor_expr_tail    := XOR and_expr xor_expr_tail | NiL 
+// // and_expr         := addsub_expr and_expr_tail | NiL 
+// // and_expr_tail    := AND addsub_expr and_expr_tail | NiL 
+// // addsub_expr      := muldiv_expr addsub_expr_tail 
+// // addsub_expr_tail := ADDSUB muldiv_expr addsub_expr_tail | NiL 
+// // muldiv_expr      := unary_expr muldiv_expr_tail 
+// // muldiv_expr_tail := MULDIV unary_expr muldiv_expr_tail | NiL 
+// // unary_expr       := ADDSUB unary_expr | factor 
+// // factor           := INT | ID | INCDEC ID | LPAREN assign_expr RPAREN
+
+/* -------------------------------Old Grammar------------------------------- */
+
+// statement := ENDFILE | END | expr END
+void statement(void) {
+    BTNode *retp = NULL;
+
+    if (match(ENDFILE)) {
+        exit(0);
+    } else if (match(END)) {
+        printf(">> ");
+        advance();
+    } else {
+        retp = expr();
+        if (match(END)) {
+            printf("%d\n", evaluateTree(retp));
+            printf("Prefix traversal: ");
+            printPrefix(retp);
+            printf("\n");
+            freeTree(retp);
+            printf(">> ");
+            advance();
+        } else {
+            error(SYNTAXERR);
+        }
+    }
+}
+// expr := term expr_tail
+BTNode *expr(void) {
+    BTNode *node = term();
+    return expr_tail(node);
+}
+// expr_tail := ADDSUB term expr_tail | NiL
+BTNode *expr_tail(BTNode *left) {
+    BTNode *node = NULL;
+
+    if (match(ADDSUB)) {
+        node = makeNode(ADDSUB, getLexeme());
+        advance();
+        node->left = left;
+        node->right = term();
+        return expr_tail(node);
+    } else {
+        return left;
+    }
+}
+// term := factor term_tail
+BTNode *term(void) {
+    BTNode *node = factor();
+    return term_tail(node);
+}
+// term_tail := MULDIV factor term_tail | NiL
+BTNode *term_tail(BTNode *left) {
+    BTNode *node = NULL;
+
+    if (match(MULDIV)) {
+        node = makeNode(MULDIV, getLexeme());
+        advance();
+        node->left = left;
+        node->right = factor();
+        return term_tail(node);
+    } else {
+        return left;
+    }
+}
 // factor := INT | ADDSUB INT |
 //		   	 ID  | ADDSUB ID  | 
 //		   	 ID ASSIGN expr |
@@ -77,7 +190,6 @@ void freeTree(BTNode *root) {
 //		   	 ADDSUB LPAREN expr RPAREN
 BTNode *factor(void) {
     BTNode *retp = NULL, *left = NULL;
-
     if (match(INT)) {
         retp = makeNode(INT, getLexeme());
         advance();
@@ -125,73 +237,8 @@ BTNode *factor(void) {
     return retp;
 }
 
-// term := factor term_tail
-BTNode *term(void) {
-    BTNode *node = factor();
-    return term_tail(node);
-}
 
-// term_tail := MULDIV factor term_tail | NiL
-BTNode *term_tail(BTNode *left) {
-    BTNode *node = NULL;
-
-    if (match(MULDIV)) {
-        node = makeNode(MULDIV, getLexeme());
-        advance();
-        node->left = left;
-        node->right = factor();
-        return term_tail(node);
-    } else {
-        return left;
-    }
-}
-
-// expr := term expr_tail
-BTNode *expr(void) {
-    BTNode *node = term();
-    return expr_tail(node);
-}
-
-// expr_tail := ADDSUB term expr_tail | NiL
-BTNode *expr_tail(BTNode *left) {
-    BTNode *node = NULL;
-
-    if (match(ADDSUB)) {
-        node = makeNode(ADDSUB, getLexeme());
-        advance();
-        node->left = left;
-        node->right = term();
-        return expr_tail(node);
-    } else {
-        return left;
-    }
-}
-
-// statement := ENDFILE | END | expr END
-void statement(void) {
-    BTNode *retp = NULL;
-
-    if (match(ENDFILE)) {
-        exit(0);
-    } else if (match(END)) {
-        printf(">> ");
-        advance();
-    } else {
-        retp = expr();
-        if (match(END)) {
-            printf("%d\n", evaluateTree(retp));
-            printf("Prefix traversal: ");
-            printPrefix(retp);
-            printf("\n");
-            freeTree(retp);
-            printf(">> ");
-            advance();
-        } else {
-            error(SYNTAXERR);
-        }
-    }
-}
-
+/* -------------------------------Error------------------------------- */
 void err(ErrorType errorNum) {
     if (PRINTERR) {
         fprintf(stderr, "error: ");
