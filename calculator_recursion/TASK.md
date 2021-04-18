@@ -19,13 +19,16 @@
 * factor		:= INT | ADDSUB INT | ID  | ADDSUB ID  | ID ASSIGN expr | LPAREN expr RPAREN | ADDSUB LPAREN expr RPAREN
 
 ### Target Function
+* Priority
+    * [*, /] > [+, -] > & > ^ > |
+
 * statement           := END | assign_expr END
 * assign_expr         := ID ASSIGN assign_expr | or_expr
 * or_expr             := xor_expr or_expr_tail
 * or_expr_tail        := OR xor_expr or_expr_tail | NiL
 * xor_expr            := and_expr xor_expr_tail
 * xor_expr_tail       := XOR and_expr xor_expr_tail | NiL
-* and_expr            := addsub_expr and_expr_tail | NiL
+* and_expr            := addsub_expr and_expr_tail
 * and_expr_tail       := AND addsub_expr and_expr_tail | NiL
 * addsub_expr         := muldiv_expr addsub_expr_tail
 * addsub_expr_tail    := ADDSUB muldiv_expr addsub_expr_tail | NiL
