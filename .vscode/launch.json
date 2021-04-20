@@ -1,16 +1,17 @@
 {
     "configurations": [
+
         {
             "name": "calculator_recursion",
             "type": "cppvsdbg",
             "request": "launch",
             "preLaunchTask": "Calculator Recursion",
-            "program": "${workspaceFolder}\\calculator_recursion\\calculator_recursion.exe",
+            "program": "${workspaceFolder}\\calculator_recursion\\calculator_recursion",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "console": "externalTerminal"
+            //"console": "externalTerminal"
         }
     ]
 }
