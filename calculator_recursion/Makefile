@@ -13,13 +13,10 @@ all: $(O_FILES)
 	@$(CC) -c $^ -o $@
 
 merge:
-	@cat $(H_FILES) $(C_FILES) | sed "s/#include \".*\"//g" > mini_project_1.c
+	@cat $(H_FILES) $(C_FILES) | sed "s/#include \".*\"//g" > main.bundle.c
 
 clean:
 	@rm -rf $(O_FILES) $(EXE)
-
-cleanO:
-	@rm -rf $(O_FILES)
 
 winclean:
 	@del *.o calculator.exe
