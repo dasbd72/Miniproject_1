@@ -16,10 +16,10 @@ merge:
 	@cat $(H_FILES) $(C_FILES) | sed "s/#include \".*\"//g" > mini_project_1.c
 
 clean:
-	@rm -rf $(O_FILES) $(EXE)
+	@rm -rf $(O_FILES) $(EXE) $(EXE).exe
 
 cleanO:
 	@rm -rf $(O_FILES)
 
 winclean:
-	@del *.o calculator.exe
+	@del *.o calculator calculator.exe
