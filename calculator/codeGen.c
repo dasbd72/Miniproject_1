@@ -3,6 +3,38 @@
 #include <string.h>
 #include "codeGen.h"
 
+void genAssembly(BTNode *root){
+    if (root != NULL) {
+        switch (root->data) {
+            case ID:
+                break;
+            case INT:
+                break;
+            case ASSIGN:
+                break;
+            case ADDSUB:
+            case MULDIV:
+                if (strcmp(root->lexeme, "+") == 0) {
+                } else if (strcmp(root->lexeme, "-") == 0) {
+                } else if (strcmp(root->lexeme, "*") == 0) {
+                } else if (strcmp(root->lexeme, "/") == 0) {
+                }
+                break;
+            case AND:
+                break;
+            case XOR:
+                break;
+            case OR:
+                break;
+            case INCDEC:
+                break;
+            default:
+                ;
+        }
+    }
+    return 0;
+}
+
 int evaluateTree(BTNode *root) {
     int retval = 0, lv = 0, rv = 0;
 

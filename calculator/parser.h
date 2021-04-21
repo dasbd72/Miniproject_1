@@ -31,7 +31,7 @@ typedef struct {
 typedef struct _Node {
     TokenSet data;
     int val;
-    char lexeme[MAXLEN];
+    char lexeme[MAXLEN], reg[3];
     struct _Node *left; 
     struct _Node *right;
 } BTNode;

@@ -1,11 +1,32 @@
 {
     "configurations": [
         {
-            "name": "calculator_recursion",
+            "name": "(Linux)Calculator",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/calculator/calculator",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "(Linux)Calculator_b",
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "(Win)Calculator",
             "type": "cppvsdbg",
             "request": "launch",
-            "preLaunchTask": "Calculator Recursion",
-            "program": "${workspaceFolder}\\calculator_recursion\\calculator_recursion.exe",
+            "preLaunchTask": "(Win)Calculator_b",
+            "program": "${workspaceFolder}\\calculator\\calculator.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
