@@ -4,7 +4,7 @@
 #include "parser.h"
 
 // Generate Assembly Code
-extern void printAssembly(BTNode *root);
+extern int printAssembly(BTNode *root);
 
 // Count the amount of Variables
 extern void countTree(BTNode *root);
