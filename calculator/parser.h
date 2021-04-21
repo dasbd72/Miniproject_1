@@ -3,10 +3,15 @@
 
 #include "lex.h"
 #define TBLSIZE 64
+#define REGSIZE 8
 
 // Set PRINTERR to 1 to print error message while calling error()
 // Make sure you set PRINTERR to 0 before you submit your code
 #define PRINTERR 1
+#define PRINTEVAL 1
+#define PRINTPRE 1
+#define PRINTARROW 1
+#define PRINTASSEMBLY 0
 
 // Call this macro to print error message and exit the program
 // This will also print where you called it in your program
@@ -23,7 +28,10 @@ typedef enum {
 
 // Structure of the symbol table
 typedef struct {
-    int val;
+    int val; // prefixTree
+    int reg; // genAssembly
+    int cnt; // setTable
+    int isVar; // prefixTree
     char name[MAXLEN];
 } Symbol;
 
@@ -31,22 +39,28 @@ typedef struct {
 typedef struct _Node {
     TokenSet data;
     int val;
-    char lexeme[MAXLEN], reg[3];
+    char lexeme[MAXLEN];
     struct _Node *left; 
     struct _Node *right;
+
+    int reg; // set in printAssembly
+    int isVar; // set in prefixTree 
 } BTNode;
 
 // The symbol table
 extern Symbol table[TBLSIZE];
 
+// Extend table
+extern void makeVariable(char *str);
+// Get pointer of variable
+extern Symbol *Variable(char *str);
 // Initialize the symbol table with builtin variables
 extern void initTable(void);
 
-// Get the value of a variable
-extern int getval(char *str);
-
-// Set the value of a variable
-extern int setval(char *str, int val);
+// REG
+extern int isRegUsed[REGSIZE];
+extern void releaseReg(char *str);
+extern int getReg(char *str);
 
 // Make a new node according to token type and lexeme
 extern BTNode *makeNode(TokenSet tok, const char *lexe);

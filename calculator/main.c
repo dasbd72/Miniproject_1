@@ -30,10 +30,14 @@
 
 int main() {
     initTable();
-    printf(">> ");
+    if(PRINTARROW) printf(">> ");
     while (1) {
         statement();
     }
-    fprintf(stdout, "EXIT 0\n");
+    if(PRINTASSEMBLY){
+        for(int i = 0; i < 3; i++) if(table[i].reg != i) 
+            printf("MOV r%d [%d]\n", i, i*4);
+    }
+    if(!PRINTERR) puts("EXIT 0");
     return 0;
 }
