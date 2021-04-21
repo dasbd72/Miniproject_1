@@ -1,5 +1,5 @@
 # Task
-test in task
+test in tas
 ## TODO
 * (done)variable accepted from char to string
 
