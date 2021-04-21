@@ -4,17 +4,17 @@
             "name": "Linux",
             "intelliSenseMode": "gcc-x64",
             "includePath": [
-                "${workspaceFolder}/calculator_recursion"
+                "${workspaceFolder}/calculator"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++14"
         },
         {
-            "name": "Win",
+            "name": "Win32",
             "intelliSenseMode": "gcc-x64",
             "includePath": [
-                "${workspaceFolder}\\calculator_recursion"
+                "${workspaceFolder}\\calculator"
             ],
             "compilerPath": "C:\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe",
             "cStandard": "c17",
