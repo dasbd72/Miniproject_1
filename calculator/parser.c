@@ -26,6 +26,8 @@ int getval(char *str) {
         if (strcmp(str, table[i].name) == 0)
             return table[i].val;
 
+    error(NOTFOUND);
+
     if (sbcount >= TBLSIZE)
         error(RUNOUT);
     
@@ -57,6 +59,7 @@ int setval(char *str, int val) {
 BTNode *makeNode(TokenSet tok, const char *lexe) {
     BTNode *node = (BTNode*)malloc(sizeof(BTNode));
     strcpy(node->lexeme, lexe);
+    memset(node->reg, 0, 3);
     node->data = tok;
     node->val = 0;
     node->left = NULL;
@@ -411,5 +414,6 @@ void err(ErrorType errorNum) {
                 break;
         }
     }
+    fprintf(stderr, "EXIT 1\n");
     exit(0);
 }
