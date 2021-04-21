@@ -2,8 +2,20 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"type": "shell",
+			"label": "(Linux)Calculator_b",
+			"command": "make",
+			"args": [
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/calculator"
+			},
+			"problemMatcher":"$gcc",
+			"group": "build"
+		},
+		{
 			"type": "cppbuild",
-			"label": "Calculator Recursion",
+			"label": "(Win)Calculator_b",
 			"command": "gcc",
 			"args": [
 				"main.c",
@@ -11,15 +23,15 @@
 				"lex.c",
 				"codeGen.c",
 				"-o",
-				"calculator_recursion"
+				"calculator"
 			],
 			"options": {
-				"cwd": "${workspaceFolder}\\calculator_recursion"
+				"cwd": "${workspaceFolder}\\calculator"
 			},
 			"problemMatcher": [
 				"$gcc"
 			],
-			"group": "build"
+			"group": "build",
 		}
 	]
 }
