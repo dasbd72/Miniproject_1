@@ -1,9 +1,20 @@
 {
     "configurations": [
         {
-            "intelliSenseMode": "${default}",
+            "name": "Linux",
+            "intelliSenseMode": "gcc-x64",
             "includePath": [
-                "${workspaceFolder}\\package\\calculator_recursion"
+                "${workspaceFolder}/calculator_recursion"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14"
+        },
+        {
+            "name": "Win",
+            "intelliSenseMode": "gcc-x64",
+            "includePath": [
+                "${workspaceFolder}\\calculator_recursion"
             ],
             "compilerPath": "C:\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe",
             "cStandard": "c17",

@@ -3,6 +3,9 @@
 
 #include "parser.h"
 
+// Generate Assembly Code
+extern void genAssembly(BTNode *root);
+
 // Evaluate the syntax tree
 extern int evaluateTree(BTNode *root);
 

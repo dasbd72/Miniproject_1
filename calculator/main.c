@@ -34,5 +34,6 @@ int main() {
     while (1) {
         statement();
     }
+    fprintf(stdout, "EXIT 0\n");
     return 0;
 }
