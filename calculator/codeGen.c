@@ -17,7 +17,7 @@ int getAvailibleReg(){
 
 int printAssembly(BTNode *root){
     if(root == NULL || !root->isVar) return -1;
-
+    puts("hi");
     int lr, rr;
     Symbol *var=NULL, *reVar=NULL;
     lr = printAssembly(root->left);

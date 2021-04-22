@@ -90,6 +90,7 @@ void statement(void) {
     int result;
 
     if (match(ENDFILE)) {
+        return;
         exit(0);
     } else if (match(END)) {
         if(PRINTARROW) printf(">> ");
@@ -97,14 +98,19 @@ void statement(void) {
     } else {
         retp = assign_expr();
         if (match(END)) {
-            if(PRINTEVAL) printf("%d\n", evaluateTree(retp));
+            if(PRINTEVAL) 
+                printf("%d\n", evaluateTree(retp));
             if(PRINTPRE) {
                 printf("Prefix traversal: ");
                 printPrefix(retp);
                 printf("\n");
             }
             if(PRINTASSEMBLY){
+                puts("setTable");
+                setTable(retp);
+                puts("prefixTree");
                 prefixTree(retp);
+                puts("printAssembly");
                 printAssembly(retp);
             }
             freeTree(retp);

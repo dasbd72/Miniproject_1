@@ -12,7 +12,7 @@ extern int getAvailibleReg();
 extern int printAssembly(BTNode *root);
 
 // Count the amount of Variables
-extern void countTree(BTNode *root);
+extern void setTable(BTNode *root);
 
 // Prefix the syntax tree
 extern void prefixTree(BTNode *root);

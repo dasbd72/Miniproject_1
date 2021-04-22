@@ -37,7 +37,7 @@ int main() {
     if(PRINTASSEMBLY){
         for(int i = 0; i < 3; i++) if(table[i].reg != i) 
             printf("MOV r%d [%d]\n", i, i*4);
+        puts("EXIT 0");
     }
-    if(!PRINTERR) puts("EXIT 0");
     return 0;
 }
