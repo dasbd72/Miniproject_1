@@ -3,6 +3,11 @@
 
 #include "parser.h"
 
+// REG
+extern int isRegUsed[REGSIZE];
+extern void releaseReg(int i);
+extern int getAvailibleReg();
+
 // Generate Assembly Code
 extern int printAssembly(BTNode *root);
 

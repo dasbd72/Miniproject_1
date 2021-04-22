@@ -6,7 +6,6 @@
 
 int sbcount = 0;
 Symbol table[TBLSIZE];
-int isRegUsed[REGSIZE];
 
 /* -------------------------------Operations------------------------------- */
 
@@ -27,6 +26,7 @@ void makeVariable(char *str){
     table[sbcount].reg = -1;
     table[sbcount].cnt = 1;
     table[sbcount].isVar = 0;
+    table[sbcount].mem = sbcount*4;
     sbcount++;
     return;
 }
@@ -40,35 +40,26 @@ Symbol *Variable(char *str){
     return NULL;
 }
 
+Symbol *leastVar(){
+    int i = 0;
+    int minCnt = 0x7fffffff;
+    int leastIdx = -1;
+    for(i = 0; i < sbcount; i++){
+        if(table[i].reg != -1){
+            if(table[i].cnt < minCnt){
+                minCnt = table[i].cnt;
+                leastIdx = i;
+            }
+        }
+    }
+    if(leastIdx == -1) return NULL;
+    return &table[leastIdx];
+}
+
 void initTable(void) {
     makeVariable("x");
     makeVariable("y");
     makeVariable("z");
-}
-
-void releaseReg(char *str){
-    int i = 0;
-    for (i = 0; i < sbcount; i++){
-        if (strcmp(str, table[i].name) == 0){
-            if(table[i].reg != -1) 
-                isRegUsed[table[i].reg] = 0;
-            return;
-        }
-    }
-}
-int getReg(char *str){
-    int i = 0;
-    for (i = 0; i < sbcount; i++)
-        if (strcmp(str, table[i].name) == 0){
-            if(table[i].reg != -1) return table[i].reg;
-            else {
-                int j = 0;
-                for(j = 0; j < REGSIZE; j++){
-                    if(!isRegUsed[j]) return table[i].reg = j;
-                }
-                return -1;
-            }
-        }
 }
 
 BTNode *makeNode(TokenSet tok, const char *lexe) {

@@ -32,6 +32,7 @@ typedef struct {
     int reg; // genAssembly
     int cnt; // setTable
     int isVar; // prefixTree
+    int mem;
     char name[MAXLEN];
 } Symbol;
 
@@ -54,13 +55,9 @@ extern Symbol table[TBLSIZE];
 extern void makeVariable(char *str);
 // Get pointer of variable
 extern Symbol *Variable(char *str);
+extern Symbol *leastVar();
 // Initialize the symbol table with builtin variables
 extern void initTable(void);
-
-// REG
-extern int isRegUsed[REGSIZE];
-extern void releaseReg(char *str);
-extern int getReg(char *str);
 
 // Make a new node according to token type and lexeme
 extern BTNode *makeNode(TokenSet tok, const char *lexe);

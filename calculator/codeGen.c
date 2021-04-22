@@ -3,40 +3,82 @@
 #include <string.h>
 #include "codeGen.h"
 
+int isRegUsed[REGSIZE];
+void releaseReg(int i){
+    isRegUsed[i] = 0;
+}
+int getAvailibleReg(){
+    int i = 0;
+    for(i = 0; i < REGSIZE; i++){
+        if(!isRegUsed[i]) return i;
+    }
+    return -1;
+}
+
 int printAssembly(BTNode *root){
     if(root == NULL || !root->isVar) return -1;
 
     int lr, rr;
+    Symbol *var=NULL, *reVar=NULL;
     lr = printAssembly(root->left);
     rr = printAssembly(root->right);
     
     switch (root->data) {
         case ID:
-            
+            var = Variable(root->lexeme);
+            if(var->reg != -1) {
+                root->reg = var->reg;
+            }
+            else {
+                root->reg = getAvailibleReg();
+                if(root->reg != -1) var->reg = root->reg;
+                else {
+                    reVar = leastVar();
+                    printf("MOV [%d] r%d\n", reVar->mem, reVar->reg);
+                    root->reg = reVar->reg;
+                    reVar->reg = -1;
+                }
+                printf("MOV r%d [%d]\n", root->reg, var->mem);
+            }
             break;
         case ASSIGN:
-            
+            printf("MOV r%d r%d\n", lr, rr);
+            releaseReg(rr);
+            root->reg = lr;
             break;
         case INCDEC:
-
+            if (strcmp(root->lexeme, "++") == 0){
+                printf("ADD r%d 1\n", rr);
+            } else if (strcmp(root->lexeme, "--") == 0) {
+                printf("SUB r%d 1\n", rr);
+            }
+            root->reg = rr;
             break;
         case ADDSUB:
         case MULDIV:
         case AND:
         case XOR:
         case OR:
+            root->reg = lr;
             if (strcmp(root->lexeme, "+") == 0) {
+                printf("ADD r%d r%d\n", lr, rr);
             } else if (strcmp(root->lexeme, "-") == 0) {
+                printf("SUB r%d r%d\n", lr, rr);
             } else if (strcmp(root->lexeme, "*") == 0) {
+                printf("MUL r%d r%d\n", lr, rr);
             } else if (strcmp(root->lexeme, "/") == 0) {
-            } else if (strcmp(root->lexeme, "&") == 0) {
+                printf("DIV r%d r%d\n", lr, rr);
             } else if (strcmp(root->lexeme, "^") == 0) {
+                printf("XOR r%d r%d\n", lr, rr);
             } else if (strcmp(root->lexeme, "|") == 0) {
+                printf("OR r%d r%d\n", lr, rr);
+            } else if (strcmp(root->lexeme, "&") == 0) {
+                printf("AND r%d r%d\n", lr, rr);
             }
             break;
     }
 
-    return -1;
+    return root->reg;
 }
 
 void prefixTree(BTNode *root) {
