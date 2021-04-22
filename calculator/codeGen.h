@@ -8,14 +8,15 @@ extern int isRegUsed[REGSIZE];
 extern void releaseReg(int i);
 extern int getAvailibleReg();
 
+extern int printAssembly_e(BTNode *root);
 // Generate Assembly Code
 extern int printAssembly(BTNode *root);
 
 // Count the amount of Variables
-extern void setTable(BTNode *root);
+extern int preprocess(BTNode *root);
 
 // Prefix the syntax tree
-extern void prefixTree(BTNode *root);
+extern int prefixTree(BTNode *root);
 
 // Evaluate the syntax tree
 extern int evaluateTree(BTNode *root);

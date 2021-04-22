@@ -28,10 +28,9 @@ typedef enum {
 
 // Structure of the symbol table
 typedef struct {
-    int val; // prefixTree
-    int reg; // genAssembly
-    int cnt; // setTable
-    int isVar; // prefixTree
+    int val; // printAssembly
+    int reg; // printAssembly
+    int cnt; // preprocess
     int mem;
     char name[MAXLEN];
 } Symbol;

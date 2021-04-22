@@ -25,7 +25,6 @@ void makeVariable(char *str){
     table[sbcount].val = 0;
     table[sbcount].reg = -1;
     table[sbcount].cnt = 1;
-    table[sbcount].isVar = 0;
     table[sbcount].mem = sbcount*4;
     sbcount++;
     return;
@@ -90,7 +89,19 @@ void statement(void) {
     int result;
 
     if (match(ENDFILE)) {
-        return;
+        if(PRINTASSEMBLY){
+            for(int i = 0; i < 3; i++){
+                if(table[i].reg != -1 && table[i].reg == i){
+                    printf("MOV [%d] r%d\n", table[i].mem, table[i].reg);
+                    table[i].reg = -1;
+                }
+            }
+            for(int i = 0; i < 3; i++){
+                if(table[i].reg != i) 
+                    printf("MOV r%d [%d]\n", i, table[i].mem);
+            }
+            puts("EXIT 0");
+        }
         exit(0);
     } else if (match(END)) {
         if(PRINTARROW) printf(">> ");
@@ -106,13 +117,11 @@ void statement(void) {
                 printf("\n");
             }
             if(PRINTASSEMBLY){
-                puts("setTable");
-                setTable(retp);
-                puts("prefixTree");
+                preprocess(retp);
                 prefixTree(retp);
-                puts("printAssembly");
-                printAssembly(retp);
+                printAssembly_e(retp);
             }
+
             freeTree(retp);
             if(PRINTARROW) printf(">> ");
             advance();
@@ -125,15 +134,11 @@ void statement(void) {
 BTNode* assign_expr(){
     BTNode *retp = or_expr(), *node=NULL;
     if(retp->data == ID && match(ASSIGN)){
-        if(retp->right == NULL && retp->left == NULL ){
-            node = makeNode(ASSIGN, getLexeme());
-            advance();
-            node->left = retp;
-            node->right = assign_expr();
-            return node;
-        } else {
-            error(NOTNUMID);
-        }
+        node = makeNode(ASSIGN, getLexeme());
+        advance();
+        node->left = retp;
+        node->right = assign_expr();
+        return node;
     } else {
         return retp;
     }
