@@ -125,13 +125,14 @@ extern void err(ErrorType errorNum);
 
 // REG
 extern int isRegUsed[REGSIZE];
+extern int preserveReg[REGSIZE];
+
 extern void releaseReg(int i);
 extern void clearReg();
 extern int getAvailibleReg(int isVar);
 
-extern int printAssembly_e(BTNode *root);
-// Generate Assembly Code
-extern int printAssembly(BTNode *root, int use);
+extern int printAssembly_v0(BTNode *root);
+extern int printAssembly_v1(BTNode *root, int use);
 
 // Count the amount of Variables
 extern int preprocess(BTNode *root);
@@ -302,7 +303,7 @@ Symbol *leastVar(){
     int minCnt = 0x7fffffff;
     int leastIdx = -1;
     for(i = 0; i < sbcount; i++){
-        if(table[i].reg != -1){
+        if(table[i].reg != -1 && !preserveReg[table[i].reg]){
             if(table[i].cnt < minCnt){
                 minCnt = table[i].cnt;
                 leastIdx = i;
@@ -349,14 +350,8 @@ void statement(void) {
     if (match(ENDFILE)) {
         if(PRINTASSEMBLY){
             for(int i = 0; i < 3; i++){
-                if(table[i].reg != -1 && table[i].reg == i){
-                    printf("MOV [%d] r%d\n", table[i].mem, table[i].reg);
-                    table[i].reg = -1;
-                }
-            }
-            for(int i = 0; i < 3; i++){
-                if(table[i].reg != i) 
-                    printf("MOV r%d [%d]\n", i, table[i].mem);
+                if(!table[i].isVar) printf("MOV r%d %d\n", i, table[i].val);
+                else printf("MOV r%d [%d]\n", i, table[i].mem);
             }
             puts("EXIT 0");
         }
@@ -369,8 +364,8 @@ void statement(void) {
         if (match(END)) {
             if(PRINTASSEMBLY){
                 preprocess(retp);
-                printAssembly_e(retp);
-                // printAssembly(retp, 0);
+                printAssembly_v0(retp);
+                // printAssembly_v1(retp, 0);
                 clearReg();
             }
             if(PRINTEVAL) 
@@ -380,8 +375,8 @@ void statement(void) {
                 printPrefix(retp);
                 printf("\n");
             }
-
             freeTree(retp);
+            
             if(PRINTARROW) printf(">> ");
             advance();
         } else {
@@ -587,8 +582,9 @@ void err(ErrorType errorNum) {
 
 
 int isRegUsed[REGSIZE];
+int preserveReg[REGSIZE];
 void releaseReg(int i){
-    isRegUsed[i] = 0;
+    if(i >= 0 && i <= 7) isRegUsed[i] = 0;
 }
 void clearReg(){
     int i = 0;
@@ -609,13 +605,18 @@ int getAvailibleReg(int isVar){
     }
     // if no availible, release one
     reVar = leastVar();
-    i = reVar->reg;
-    printf("MOV [%d] r%d\n", reVar->mem, reVar->reg);
-    reVar->reg = -1;
+    if(reVar != NULL){
+        i = reVar->reg;
+        printf("MOV [%d] r%d\n", reVar->mem, reVar->reg);
+        reVar->reg = -1;
+    } else {
+
+    }
+    
     return i;
 }
 
-int printAssembly_e(BTNode *root){
+int printAssembly_v0(BTNode *root){
     if(root == NULL) return -1;
     int lr, rr;
     Symbol *var=NULL;
@@ -633,20 +634,17 @@ int printAssembly_e(BTNode *root){
             break;
         case ASSIGN:
             var = Variable(root->left->lexeme);
-            rr = root->reg = printAssembly_e(root->right);
+            rr = root->reg = printAssembly_v0(root->right);
             printf("MOV [%d] r%d\n", var->mem, rr);
             break;
         case INCDEC:
             var = Variable(root->right->lexeme);
-            rr = root->reg = printAssembly_e(root->right);
+            rr = root->reg = printAssembly_v0(root->right);
             lr = getAvailibleReg(0);
 
-            printf("MOV r%d 1\n", lr);
-            if (strcmp(root->lexeme, "++") == 0){
-                printf("ADD r%d r%d\n", root->reg, lr);
-            } else if (strcmp(root->lexeme, "--") == 0) {
-                printf("SUB r%d r%d\n", root->reg, lr);
-            }
+            printf("MOV r%d %d\n", lr, strcmp(root->lexeme, "++") == 0 ? 1 : -1);
+            printf("ADD r%d r%d\n", root->reg, lr);
+            
             releaseReg(lr);
             printf("MOV [%d] r%d\n", var->mem, root->reg);
             break;
@@ -655,8 +653,8 @@ int printAssembly_e(BTNode *root){
         case AND:
         case XOR:
         case OR:
-            lr = root->reg =  printAssembly_e(root->left);
-            rr = printAssembly_e(root->right);
+            lr = root->reg =  printAssembly_v0(root->left);
+            rr = printAssembly_v0(root->right);
             if (strcmp(root->lexeme, "+") == 0) printf("ADD ");
             else if (strcmp(root->lexeme, "-") == 0) printf("SUB ");
             else if (strcmp(root->lexeme, "*") == 0) printf("MUL ");
@@ -672,74 +670,130 @@ int printAssembly_e(BTNode *root){
     return root->reg;
 }
 
-// set reg, print assembly
-// return -1 if : !isVar, ID not registered
-int printAssembly(BTNode *root, int use){
-    /*
-    if(root == NULL || !root->isVar) return -1;
-    int lr, rr;
+// isVar or not, Used or not
+// return -1: !use, use&&!isVar
+int printAssembly_v1(BTNode *root, int use){
+    if(root == NULL) return -1;
+    int lr, rr, _num;
     Symbol *var=NULL;
 
     switch (root->data) {
         case ID:
-            var = Variable(root->lexeme);
-            root->reg = var->reg;
-            if(root->reg == -1){
-                if(!use) break;
-                else if(var->)
+            if(!use) root->reg = -1;
+            else {
+                var = Variable(root->lexeme);
+                var->cnt--;
+                root->isVar = var->isVar;
+
+                if(!root->isVar) {
+                    root->reg = -1;
+                    root->val = var->val;
+                } else {
+                    root->reg = getAvailibleReg(0);
+                    printf("MOV r%d [%d]\n", root->reg, var->mem);
+                }
             }
-            if(use && root->reg == -1){
-                root->reg = var->reg = getAvailibleReg(1);
-            }
-            var->cnt--;
             break;
         case INT:
-            root->reg = getAvailibleReg(0);
-            printf("MOV r%d %d\n", root->reg, root->val);
+            root->isVar = 0;
+            root->reg = -1;
             break;
         case ASSIGN:
             var = Variable(root->left->lexeme);
-            rr = root->reg = printAssembly(root->right);
-            printf("MOV [%d] r%d\n", var->mem, rr);
+            rr = printAssembly_v1(root->right, 1);
+            root->isVar = var->isVar = root->right->isVar;
+
+            if(!root->isVar){
+                root->val = var->val = root->right->val;
+                root->reg = -1;
+            } else {
+                printf("MOV [%d] r%d\n", var->mem, rr);
+                if(!use) {
+                    root->reg = -1;
+                    releaseReg(rr);
+                } else {
+                    root->reg = rr;
+                }
+            }
             break;
         case INCDEC:
             var = Variable(root->right->lexeme);
-            rr = root->reg = printAssembly(root->right);
-            lr = getAvailibleReg(0);
+            root->isVar = var->isVar;
+            
+            _num = strcmp(root->lexeme, "++")==0 ? 1 : -1;
 
-            printf("MOV r%d 1\n", lr);
-            if (strcmp(root->lexeme, "++") == 0){
-                printf("ADD r%d r%d\n", root->reg, lr);
-            } else if (strcmp(root->lexeme, "--") == 0) {
-                printf("SUB r%d r%d\n", root->reg, lr);
+            if(!root->isVar) {
+                root->val = var->val = var->val + _num;
+                root->reg = -1;
+            } else {
+                rr = getAvailibleReg(0);
+                lr = getAvailibleReg(0);
+                printf("MOV r%d [%d]\n", rr, var->mem);
+                printf("MOV r%d %d\n", lr, _num);
+                printf("ADD r%d r%d\n", rr, lr);
+                printf("MOV [%d] r%d\n", var->mem, rr);
+                releaseReg(lr);
+                if(!use) {
+                    releaseReg(rr);
+                    root->reg = -1;
+                } else {
+                    root->reg = rr;
+                }
             }
-            releaseReg(lr);
-            printf("MOV [%d] r%d\n", var->mem, root->reg);
             break;
         case ADDSUB:
         case MULDIV:
         case AND:
         case XOR:
         case OR:
-            lr = root->reg =  printAssembly(root->left);
-            rr = printAssembly(root->right);
-            if (strcmp(root->lexeme, "+") == 0) printf("ADD ");
-            else if (strcmp(root->lexeme, "-") == 0) printf("SUB ");
-            else if (strcmp(root->lexeme, "*") == 0) printf("MUL ");
-            else if (strcmp(root->lexeme, "/") == 0) printf("DIV ");
-            else if (strcmp(root->lexeme, "^") == 0) printf("XOR ");
-            else if (strcmp(root->lexeme, "|") == 0) printf("OR ");
-            else if (strcmp(root->lexeme, "&") == 0) printf("AND ");
+            lr = printAssembly_v1(root->left, use);
+            rr = printAssembly_v1(root->right, use);
+            root->isVar = root->left->isVar || root->right->isVar;
+            if(!root->isVar && strcmp(root->lexeme, "/") == 0 && root->right->val == 0){
+                root->isVar = 1;
+                rr = getAvailibleReg(0);
+                printf("MOV r%d %d\n", rr, 0);
+            }
+            if(!use) root->reg = -1;
+            else {
+                if(!root->isVar) {
+                    root->reg = -1;
+                    if (strcmp(root->lexeme, "+") == 0) root->val = root->left->val + root->right->val;
+                    else if (strcmp(root->lexeme, "-") == 0) root->val = root->left->val - root->right->val;
+                    else if (strcmp(root->lexeme, "*") == 0) root->val = root->left->val * root->right->val;
+                    else if (strcmp(root->lexeme, "/") == 0) root->val = root->left->val / root->right->val;
+                    else if (strcmp(root->lexeme, "^") == 0) root->val = root->left->val ^ root->right->val;
+                    else if (strcmp(root->lexeme, "|") == 0) root->val = root->left->val | root->right->val;
+                    else if (strcmp(root->lexeme, "&") == 0) root->val = root->left->val & root->right->val;
+                } else {
+                    if(lr == -1){
+                        root->reg = getAvailibleReg(0);
+                        printf("MOV r%d %d\n", root->reg, root->left->val);
+                    } 
+                    if(rr == -1) {
+                        rr = getAvailibleReg(0);
+                        printf("MOV r%d %d\n", rr, root->right->val);
+                    }
 
-            printf("r%d r%d\n", lr, rr);
-            releaseReg(rr);
+                    if (strcmp(root->lexeme, "+") == 0) printf("ADD ");
+                    else if (strcmp(root->lexeme, "-") == 0) printf("SUB ");
+                    else if (strcmp(root->lexeme, "*") == 0) printf("MUL ");
+                    else if (strcmp(root->lexeme, "/") == 0) printf("DIV ");
+                    else if (strcmp(root->lexeme, "^") == 0) printf("XOR ");
+                    else if (strcmp(root->lexeme, "|") == 0) printf("OR ");
+                    else if (strcmp(root->lexeme, "&") == 0) printf("AND ");
+
+                    printf("r%d r%d\n", lr, rr);
+                    releaseReg(rr);
+                    root->reg = lr;
+                }
+            }
     }
 
     return root->reg;
-    */
 }
 
-// Build table, cnt appearance, error NOTFOUND, error DIVZERO, set isVar, set val
+// Build table, cnt appearance, error NOTFOUND, error DIVZERO
 int preprocess(BTNode *root){
     if(root == NULL) return;
 

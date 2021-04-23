@@ -45,7 +45,7 @@ Symbol *leastVar(){
     int minCnt = 0x7fffffff;
     int leastIdx = -1;
     for(i = 0; i < sbcount; i++){
-        if(table[i].reg != -1 && !preserveReg[table[i].reg]){
+        if(table[i].reg != -1){
             if(table[i].cnt < minCnt){
                 minCnt = table[i].cnt;
                 leastIdx = i;
@@ -92,14 +92,8 @@ void statement(void) {
     if (match(ENDFILE)) {
         if(PRINTASSEMBLY){
             for(int i = 0; i < 3; i++){
-                if(table[i].reg != -1 && table[i].reg == i){
-                    printf("MOV [%d] r%d\n", table[i].mem, table[i].reg);
-                    table[i].reg = -1;
-                }
-            }
-            for(int i = 0; i < 3; i++){
-                if(table[i].reg != i) 
-                    printf("MOV r%d [%d]\n", i, table[i].mem);
+                if(!table[i].isVar) printf("MOV r%d %d\n", i, table[i].val);
+                else printf("MOV r%d [%d]\n", i, table[i].mem);
             }
             puts("EXIT 0");
         }
@@ -112,8 +106,8 @@ void statement(void) {
         if (match(END)) {
             if(PRINTASSEMBLY){
                 preprocess(retp);
-                // printAssembly_e(retp);
-                printAssembly(retp, 0);
+                // printAssembly_v0(retp);
+                printAssembly_v1(retp, 0);
                 clearReg();
             }
             if(PRINTEVAL) 
@@ -123,8 +117,8 @@ void statement(void) {
                 printPrefix(retp);
                 printf("\n");
             }
-
             freeTree(retp);
+            
             if(PRINTARROW) printf(">> ");
             advance();
         } else {
