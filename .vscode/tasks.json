@@ -10,6 +10,7 @@
 				"codeGen.c",
 				"lex.c",
 				"parser.c",
+				"utilities.c",
 				"-o",
 				"calculator"
 			],
@@ -28,6 +29,7 @@
 				"parser.c",
 				"lex.c",
 				"codeGen.c",
+				"utilities.c",
 				"-o",
 				"calculator"
 			],

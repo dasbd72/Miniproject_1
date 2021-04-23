@@ -2,39 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include "codeGen.h"
+#include "utilities.h"
 
-int isRegUsed[REGSIZE];
-void releaseReg(int i){
-    if(i >= 0 && i <= 7) isRegUsed[i] = 0;
+void genAssembly(BTNode *root){
+    preprocess(root);
+    printAssembly_v0(root);
+    // printAssembly_v1(root, 0);
+    clearReg();
 }
-void clearReg(){
-    int i = 0;
-    for(i = 0; i < REGSIZE; i++){
-        if(isRegUsed[i] == 2) {
-            isRegUsed[i] = 0;
-        }
+void printAssemblyEOF(){
+    for(int i = 0; i < 3; i++){
+        if(!table[i].isVar) printf("MOV r%d %d\n", i, table[i].val);
+        else printf("MOV r%d [%d]\n", i, table[i].mem);
     }
-}
-int getAvailibleReg(int isVar){
-    Symbol *reVar = NULL;
-    int i = 0;
-    for(i = 0; i < REGSIZE; i++){
-        if(!isRegUsed[i]) {
-            isRegUsed[i] = isVar ? 1 : 2;
-            return i;
-        }
-    }
-    // if no availible, release one
-    reVar = leastVar();
-    if(reVar != NULL){
-        i = reVar->reg;
-        printf("MOV [%d] r%d\n", reVar->mem, reVar->reg);
-        reVar->reg = -1;
-    } else {
-
-    }
-    
-    return i;
+    puts("EXIT 0");
 }
 
 int printAssembly_v0(BTNode *root){

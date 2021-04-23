@@ -2,8 +2,6 @@
 #define __PARSER__
 
 #include "lex.h"
-#define TBLSIZE 64
-#define REGSIZE 8
 
 // Set PRINTERR to 1 to print error message while calling error()
 // Make sure you set PRINTERR to 0 before you submit your code
@@ -48,14 +46,6 @@ typedef struct _Node {
     int isVar; // set in prefixTree 
 } BTNode;
 
-// The symbol table
-extern Symbol table[TBLSIZE];
-
-// Extend table
-extern void makeVariable(char *str);
-// Get pointer of variable
-extern Symbol *Variable(char *str);
-extern Symbol *leastVar();
 // Initialize the symbol table with builtin variables
 extern void initTable(void);
 

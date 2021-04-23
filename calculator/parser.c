@@ -4,57 +4,7 @@
 #include "parser.h"
 #include "codeGen.h"
 
-int sbcount = 0;
-Symbol table[TBLSIZE];
-
 /* -------------------------------Operations------------------------------- */
-
-void makeVariable(char *str){
-    int i = 0;
-
-    for (i = 0; i < sbcount; i++) {
-        if (strcmp(str, table[i].name) == 0) {
-            return;
-        }
-    }
-    
-    if (sbcount >= TBLSIZE)
-        error(RUNOUT);
-    
-    strcpy(table[sbcount].name, str);
-    table[sbcount].val = 0;
-    table[sbcount].reg = -1;
-    table[sbcount].cnt = 1;
-    table[sbcount].isVar = 1;
-    table[sbcount].mem = sbcount*4;
-    sbcount++;
-    return;
-}
-
-Symbol *Variable(char *str){
-    int i = 0;
-
-    for (i = 0; i < sbcount; i++)
-        if (strcmp(str, table[i].name) == 0)
-            return &table[i];
-    return NULL;
-}
-
-Symbol *leastVar(){
-    int i = 0;
-    int minCnt = 0x7fffffff;
-    int leastIdx = -1;
-    for(i = 0; i < sbcount; i++){
-        if(table[i].reg != -1){
-            if(table[i].cnt < minCnt){
-                minCnt = table[i].cnt;
-                leastIdx = i;
-            }
-        }
-    }
-    if(leastIdx == -1) return NULL;
-    return &table[leastIdx];
-}
 
 void initTable(void) {
     makeVariable("x");
@@ -90,13 +40,7 @@ void statement(void) {
     int result;
 
     if (match(ENDFILE)) {
-        if(PRINTASSEMBLY){
-            for(int i = 0; i < 3; i++){
-                if(!table[i].isVar) printf("MOV r%d %d\n", i, table[i].val);
-                else printf("MOV r%d [%d]\n", i, table[i].mem);
-            }
-            puts("EXIT 0");
-        }
+        if(PRINTASSEMBLY) printAssemblyEOF();
         exit(0);
     } else if (match(END)) {
         if(PRINTARROW) printf(">> ");
@@ -104,12 +48,8 @@ void statement(void) {
     } else {
         retp = assign_expr();
         if (match(END)) {
-            if(PRINTASSEMBLY){
-                preprocess(retp);
-                // printAssembly_v0(retp);
-                printAssembly_v1(retp, 0);
-                clearReg();
-            }
+            if(PRINTASSEMBLY)
+                genAssembly(retp);
             if(PRINTEVAL) 
                 printf("%d\n", evaluateTree(retp));
             if(PRINTPRE) {
