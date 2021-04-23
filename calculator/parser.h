@@ -31,6 +31,7 @@ typedef struct {
     int val; // printAssembly
     int reg; // printAssembly
     int cnt; // preprocess
+    int isVar; // printAssembly
     int mem;
     char name[MAXLEN];
 } Symbol;

@@ -25,6 +25,7 @@ void makeVariable(char *str){
     table[sbcount].val = 0;
     table[sbcount].reg = -1;
     table[sbcount].cnt = 1;
+    table[sbcount].isVar = 1;
     table[sbcount].mem = sbcount*4;
     sbcount++;
     return;
@@ -44,7 +45,7 @@ Symbol *leastVar(){
     int minCnt = 0x7fffffff;
     int leastIdx = -1;
     for(i = 0; i < sbcount; i++){
-        if(table[i].reg != -1){
+        if(table[i].reg != -1 && !preserveReg[table[i].reg]){
             if(table[i].cnt < minCnt){
                 minCnt = table[i].cnt;
                 leastIdx = i;
@@ -68,7 +69,7 @@ BTNode *makeNode(TokenSet tok, const char *lexe) {
     node->val = 0;
     node->left = NULL;
     node->right = NULL;
-    node->isVar = 0;
+    node->isVar = 1;
     node->reg = -1;
     return node;
 }
@@ -109,17 +110,18 @@ void statement(void) {
     } else {
         retp = assign_expr();
         if (match(END)) {
+            if(PRINTASSEMBLY){
+                preprocess(retp);
+                // printAssembly_e(retp);
+                printAssembly(retp, 0);
+                clearReg();
+            }
             if(PRINTEVAL) 
                 printf("%d\n", evaluateTree(retp));
             if(PRINTPRE) {
                 printf("Prefix traversal: ");
                 printPrefix(retp);
                 printf("\n");
-            }
-            if(PRINTASSEMBLY){
-                preprocess(retp);
-                printAssembly_e(retp);
-                clearReg();
             }
 
             freeTree(retp);

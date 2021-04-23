@@ -4,8 +4,14 @@
 		{
 			"type": "shell",
 			"label": "(Linux)Calculator_b",
-			"command": "make",
+			"command": "gcc",
 			"args": [
+				"main.c",
+				"codeGen.c",
+				"lex.c",
+				"parser.c",
+				"-o",
+				"calculator"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}/calculator"
