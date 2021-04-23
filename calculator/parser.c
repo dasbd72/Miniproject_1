@@ -118,8 +118,8 @@ void statement(void) {
             }
             if(PRINTASSEMBLY){
                 preprocess(retp);
-                prefixTree(retp);
                 printAssembly_e(retp);
+                clearReg();
             }
 
             freeTree(retp);

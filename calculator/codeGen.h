@@ -6,7 +6,8 @@
 // REG
 extern int isRegUsed[REGSIZE];
 extern void releaseReg(int i);
-extern int getAvailibleReg();
+extern void clearReg();
+extern int getAvailibleReg(int isVar);
 
 extern int printAssembly_e(BTNode *root);
 // Generate Assembly Code
@@ -14,9 +15,6 @@ extern int printAssembly(BTNode *root);
 
 // Count the amount of Variables
 extern int preprocess(BTNode *root);
-
-// Prefix the syntax tree
-extern int prefixTree(BTNode *root);
 
 // Evaluate the syntax tree
 extern int evaluateTree(BTNode *root);
