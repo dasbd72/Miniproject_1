@@ -24,16 +24,6 @@ typedef enum {
     UNDEFINED, MISPAREN, NOTNUMID, NOTFOUND, RUNOUT, NOTLVAL, DIVZERO, SYNTAXERR
 } ErrorType;
 
-// Structure of the symbol table
-typedef struct {
-    int val; // printAssembly
-    int reg; // printAssembly
-    int cnt; // preprocess
-    int isVar; // printAssembly
-    int mem;
-    char name[MAXLEN];
-} Symbol;
-
 // Structure of a tree node
 typedef struct _Node {
     TokenSet data;

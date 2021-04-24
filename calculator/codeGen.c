@@ -430,11 +430,23 @@ void genAssembly(BTNode *root){
     // printAssembly_v1(root, 0);
     printAssembly_v2(root, 0);
     clearReg();
+    clearMem();
 }
 void printAssemblyEOF(){
-    for(int i = 0; i < 3; i++){
-        if(!varTable[i].isVar) printf("MOV r%d %d\n", i, varTable[i].val);
-        else printf("MOV r%d [%d]\n", i, varTable[i].mem*4);
-    }
+    Symbol *var;
+    
+    var = Variable("x");
+    if(!var->isVar) printf("MOV r%d %d\n", 0, var->val);
+    else printf("MOV r%d [%d]\n", 0, var->mem*4);
+    var = Variable("y");
+    if(!var->isVar) printf("MOV r%d %d\n", 1, var->val);
+    else printf("MOV r%d [%d]\n", 1, var->mem*4);
+    var = Variable("z");
+    if(!var->isVar) printf("MOV r%d %d\n", 2, var->val);
+    else printf("MOV r%d [%d]\n", 2, var->mem*4);
+
     puts("EXIT 0");
 }
+
+
+

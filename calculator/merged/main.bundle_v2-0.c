@@ -49,16 +49,6 @@ typedef enum {
     UNDEFINED, MISPAREN, NOTNUMID, NOTFOUND, RUNOUT, NOTLVAL, DIVZERO, SYNTAXERR
 } ErrorType;
 
-// Structure of the symbol table
-typedef struct {
-    int val; // printAssembly
-    int reg; // printAssembly
-    int cnt; // preprocess
-    int isVar; // printAssembly
-    int mem;
-    char name[MAXLEN];
-} Symbol;
-
 // Structure of a tree node
 typedef struct _Node {
     TokenSet data;
@@ -133,6 +123,16 @@ extern void printPrefix(BTNode *root);
 #define R2MSIZE 256
 #define MEMSIZE 64
 
+// Structure of the symbol table
+typedef struct {
+    int val; // printAssembly
+    int reg; // printAssembly
+    int cnt; // preprocess
+    int isVar; // printAssembly
+    int mem;
+    char name[MAXLEN];
+} Symbol;
+
 // MEM
 extern void releaseMem(int i);
 extern void clearMem();
@@ -147,7 +147,6 @@ extern int getAvailibleReg(int isVar);
 extern void makeVariable(char *str);
 // Get pointer of variable
 extern Symbol *Variable(char *str);
-extern Symbol *leastVar();
 
 #endif // __UTILITIES__
 #include <stdio.h>
@@ -954,6 +953,7 @@ void genAssembly(BTNode *root){
     // printAssembly_v1(root, 0);
     printAssembly_v2(root, 0);
     clearReg();
+    clearMem();
 }
 void printAssemblyEOF(){
     Symbol *var;
@@ -979,17 +979,23 @@ void printAssemblyEOF(){
 
 
 
+typedef struct Register{
+    int data;
+    int marr[MEMSIZE]; // ReleaseReg, 
+    int mi;
+}Register;
+
 int varCnt = 0;
-int memCnt = 0;
 Symbol varTable[TBLSIZE];
-int regTable[REGSIZE];
+int regReuseIdx = 0;
+Register regTable[REGSIZE];
 int regToMem[R2MSIZE];
 int memTable[MEMSIZE];
 
 /*-------------------------------MEM---------------------------------*/
 
 void releaseMem(int i){
-    if(i >= 0 && i < memCnt)  memTable[i] = 0;
+    if(i >= 0 && i < MEMSIZE) memTable[i] = 0;
 }
 void clearMem(){
     int i = 0;
@@ -1010,29 +1016,48 @@ int getAvailibleMem(int isVar){
 }
 
 /*-------------------------------REG---------------------------------*/
-
+void initReg(){
+    for(int i = 0; i < REGSIZE; i++){
+        regTable[i].data = 0;
+        regTable[i].mi = 0;
+    }
+}
 void releaseReg(int i){
-    if(i >= 0 && i < REGSIZE) regTable[i] = 0;
+    if(i >= 0 && i < REGSIZE) {
+        if(regTable[i].mi > 0){
+            regTable[i].mi--;
+            printf("MOV r%d [%d]\n", i, regTable[i].marr[regTable[i].mi]*4);
+            releaseMem(regTable[i].marr[regTable[i].mi]);
+        } else {
+            regTable[i].data = 0;
+        }
+    }
 }
 void clearReg(){
     int i = 0;
     for(i = 0; i < REGSIZE; i++){
-        if(regTable[i] == 2) {
-            regTable[i] = 0;
+        if(regTable[i].data == 2) {
+            regTable[i].data = 0;
         }
     }
+    regReuseIdx = 0;
 }
 int getAvailibleReg(int isVar){
     Symbol *reVar = NULL;
     int i = 0;
     for(i = 0; i < REGSIZE; i++){
-        if(!regTable[i]) {
-            regTable[i] = isVar ? 1 : 2;
+        if(!regTable[i].data) {
+            regTable[i].data = isVar ? 1 : 2;
             return i;
         }
     }
     // if no availible, release one
-    
+    i = regReuseIdx;
+    regTable[regReuseIdx].marr[regTable[regReuseIdx].mi] = getAvailibleMem(0);
+    printf("MOV [%d] r%d\n", regTable[regReuseIdx].marr[regTable[regReuseIdx].mi]*4, regReuseIdx);
+    regTable[regReuseIdx].mi++;
+    ++regReuseIdx;
+    if(regReuseIdx >= REGSIZE) regReuseIdx = 0;
     return i;
 }
 
@@ -1069,21 +1094,21 @@ Symbol *Variable(char *str){
     return NULL;
 }
 
-Symbol *leastVar(){
-    int i = 0;
-    int minCnt = 0x7fffffff;
-    int leastIdx = -1;
-    for(i = 0; i < varCnt; i++){
-        if(varTable[i].reg != -1){
-            if(varTable[i].cnt < minCnt){
-                minCnt = varTable[i].cnt;
-                leastIdx = i;
-            }
-        }
-    }
-    if(leastIdx == -1) return NULL;
-    return &varTable[leastIdx];
-}
+// Symbol *leastVar(){
+//     int i = 0;
+//     int minCnt = 0x7fffffff;
+//     int leastIdx = -1;
+//     for(i = 0; i < varCnt; i++){
+//         if(varTable[i].reg != -1){
+//             if(varTable[i].cnt < minCnt){
+//                 minCnt = varTable[i].cnt;
+//                 leastIdx = i;
+//             }
+//         }
+//     }
+//     if(leastIdx == -1) return NULL;
+//     return &varTable[leastIdx];
+// }
 
 
 #include <stdio.h>

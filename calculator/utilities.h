@@ -8,24 +8,29 @@
 #define R2MSIZE 256
 #define MEMSIZE 64
 
+// Structure of the symbol table
+typedef struct {
+    int val; // printAssembly
+    int reg; // printAssembly
+    int cnt; // preprocess
+    int isVar; // printAssembly
+    int mem;
+    char name[MAXLEN];
+} Symbol;
+
 // MEM
-extern int regToMem[R2MSIZE];
-extern int memTable[MEMSIZE];
 extern void releaseMem(int i);
 extern void clearMem();
 extern int getAvailibleMem(int isVar);
 
 // REG
-extern int regTable[REGSIZE];
 extern void releaseReg(int i);
 extern void clearReg();
 extern int getAvailibleReg(int isVar);
 
 // Variable
-extern Symbol varTable[TBLSIZE];
 extern void makeVariable(char *str);
 // Get pointer of variable
 extern Symbol *Variable(char *str);
-extern Symbol *leastVar();
 
 #endif // __UTILITIES__
