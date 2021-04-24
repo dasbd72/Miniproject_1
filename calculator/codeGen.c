@@ -259,8 +259,13 @@ int printAssembly_v2(BTNode *root, int use){
         case AND:
         case XOR:
         case OR:
-            lr = printAssembly_v2(root->left, use);
-            rr = printAssembly_v2(root->right, use);
+            if(root->left->size >= root->right->size) {
+                lr = printAssembly_v2(root->left, use);
+                rr = printAssembly_v2(root->right, use);
+            } else {
+                rr = printAssembly_v2(root->right, use);
+                lr = printAssembly_v2(root->left, use);
+            }
             root->isVar = root->left->isVar || root->right->isVar;
             if(!root->isVar && strcmp(root->lexeme, "/") == 0 && root->right->val == 0){
                 root->isVar = 1;
@@ -308,7 +313,7 @@ int printAssembly_v2(BTNode *root, int use){
 
 // Build varTable, cnt appearance, error NOTFOUND, error DIVZERO
 int preprocess(BTNode *root){
-    if(root == NULL) return;
+    // if(root == NULL) return 0;
 
     Symbol *var = NULL;
     int lv, rv;
@@ -440,8 +445,8 @@ void genAssembly(BTNode *root){
     countSize(root);
     preprocess(root);
     // printAssembly_v0(root);
-    printAssembly_v1(root, 0);
-    // printAssembly_v2(root, 0);
+    // printAssembly_v1(root, 0);
+    printAssembly_v2(root, 0);
     clearReg();
     clearMem();
 }

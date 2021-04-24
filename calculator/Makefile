@@ -13,7 +13,7 @@ all: $(O_FILES)
 	@$(CC) -c $^ -o $@
 
 merge:
-	@cat $(H_FILES) $(C_FILES) | sed "s/#include \".*\"//g" > merged/main.bundle_v1-2.c
+	@cat $(H_FILES) $(C_FILES) | sed "s/#include \".*\"//g" > merged/main.bundle_v2-0.c
 
 clean:
 	@rm -rf $(O_FILES) $(EXE) $(EXE).exe
