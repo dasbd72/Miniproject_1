@@ -134,8 +134,13 @@ int printAssembly_v1(BTNode *root, int use){
         case AND:
         case XOR:
         case OR:
-            lr = printAssembly_v1(root->left, use);
-            rr = printAssembly_v1(root->right, use);
+            if(root->left->size >= root->right->size) {
+                lr = printAssembly_v1(root->left, use);
+                rr = printAssembly_v1(root->right, use);
+            } else {
+                rr = printAssembly_v1(root->right, use);
+                lr = printAssembly_v1(root->left, use);
+            }
             root->isVar = root->left->isVar || root->right->isVar;
             if(!root->isVar && strcmp(root->lexeme, "/") == 0 && root->right->val == 0){
                 root->isVar = 1;
@@ -364,6 +369,13 @@ int preprocess(BTNode *root){
     return root->isVar;
 }
 
+int countSize(BTNode *root){
+    if(root == NULL) return 0;
+    int lsize = countSize(root->left);
+    int rsize = countSize(root->right);
+    return root->size = lsize + rsize + 1;
+}
+
 int evaluateTree(BTNode *root) {
     int retval = 0, lv = 0, rv = 0;
 
@@ -425,6 +437,7 @@ void printPrefix(BTNode *root) {
 }
 
 void genAssembly(BTNode *root){
+    countSize(root);
     preprocess(root);
     // printAssembly_v0(root);
     printAssembly_v1(root, 0);

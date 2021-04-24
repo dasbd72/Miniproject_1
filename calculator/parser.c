@@ -21,6 +21,7 @@ BTNode *makeNode(TokenSet tok, const char *lexe) {
     node->right = NULL;
     node->isVar = 1;
     node->reg = -1;
+    node->size = 0;
     return node;
 }
 

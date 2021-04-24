@@ -32,6 +32,7 @@ typedef struct _Node {
     struct _Node *left; 
     struct _Node *right;
 
+    int size; // set in prefixTree
     int reg; // set in printAssembly
     int isVar; // set in prefixTree 
 } BTNode;
