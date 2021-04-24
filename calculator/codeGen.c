@@ -427,11 +427,12 @@ void printPrefix(BTNode *root) {
 void genAssembly(BTNode *root){
     preprocess(root);
     // printAssembly_v0(root);
-    // printAssembly_v1(root, 0);
-    printAssembly_v2(root, 0);
+    printAssembly_v1(root, 0);
+    // printAssembly_v2(root, 0);
     clearReg();
     clearMem();
 }
+
 void printAssemblyEOF(){
     Symbol *var;
     
