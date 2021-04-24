@@ -1,0 +1,12 @@
+x = 16
+y = 15
+z = 14
+test1 = x
+test2 = y
+test3 = z
+++test1
+--test2
+x = (y + (test3 = test2 * 80))
+--test3
+y = 8 ^ test3
+

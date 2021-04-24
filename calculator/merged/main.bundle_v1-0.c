@@ -1,3 +1,4 @@
+// Constant
 #ifndef __LEX__
 #define __LEX__
 
@@ -27,8 +28,6 @@ extern char *getLexeme(void);
 #define __PARSER__
 
 
-#define TBLSIZE 64
-#define REGSIZE 8
 
 // Set PRINTERR to 1 to print error message while calling error()
 // Make sure you set PRINTERR to 0 before you submit your code
@@ -73,14 +72,6 @@ typedef struct _Node {
     int isVar; // set in prefixTree 
 } BTNode;
 
-// The symbol table
-extern Symbol table[TBLSIZE];
-
-// Extend table
-extern void makeVariable(char *str);
-// Get pointer of variable
-extern Symbol *Variable(char *str);
-extern Symbol *leastVar();
 // Initialize the symbol table with builtin variables
 extern void initTable(void);
 
@@ -123,14 +114,8 @@ extern void err(ErrorType errorNum);
 
 
 
-// REG
-extern int isRegUsed[REGSIZE];
-extern int preserveReg[REGSIZE];
-
-extern void releaseReg(int i);
-extern void clearReg();
-extern int getAvailibleReg(int isVar);
-
+extern void genAssembly(BTNode *root);
+extern void printAssemblyEOF();
 extern int printAssembly_v0(BTNode *root);
 extern int printAssembly_v1(BTNode *root, int use);
 
@@ -144,6 +129,37 @@ extern int evaluateTree(BTNode *root);
 extern void printPrefix(BTNode *root);
 
 #endif // __CODEGEN__
+#ifndef __UTILITIES__
+#define __UTILITIES__
+
+
+
+#define TBLSIZE 64
+#define REGSIZE 8
+#define R2MSIZE 256
+#define MEMSIZE 64
+
+// MEM
+extern int regToMem[R2MSIZE];
+extern int memTable[MEMSIZE];
+extern void releaseMem(int i);
+extern void clearMem();
+extern int getAvailibleMem(int isVar);
+
+// REG
+extern int regTable[REGSIZE];
+extern void releaseReg(int i);
+extern void clearReg();
+extern int getAvailibleReg(int isVar);
+
+// Variable
+extern Symbol varTable[TBLSIZE];
+extern void makeVariable(char *str);
+// Get pointer of variable
+extern Symbol *Variable(char *str);
+extern Symbol *leastVar();
+
+#endif // __UTILITIES__
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -262,57 +278,7 @@ char *getLexeme(void) {
 
 
 
-int sbcount = 0;
-Symbol table[TBLSIZE];
-
 /* -------------------------------Operations------------------------------- */
-
-void makeVariable(char *str){
-    int i = 0;
-
-    for (i = 0; i < sbcount; i++) {
-        if (strcmp(str, table[i].name) == 0) {
-            return;
-        }
-    }
-    
-    if (sbcount >= TBLSIZE)
-        error(RUNOUT);
-    
-    strcpy(table[sbcount].name, str);
-    table[sbcount].val = 0;
-    table[sbcount].reg = -1;
-    table[sbcount].cnt = 1;
-    table[sbcount].isVar = 1;
-    table[sbcount].mem = sbcount*4;
-    sbcount++;
-    return;
-}
-
-Symbol *Variable(char *str){
-    int i = 0;
-
-    for (i = 0; i < sbcount; i++)
-        if (strcmp(str, table[i].name) == 0)
-            return &table[i];
-    return NULL;
-}
-
-Symbol *leastVar(){
-    int i = 0;
-    int minCnt = 0x7fffffff;
-    int leastIdx = -1;
-    for(i = 0; i < sbcount; i++){
-        if(table[i].reg != -1 && !preserveReg[table[i].reg]){
-            if(table[i].cnt < minCnt){
-                minCnt = table[i].cnt;
-                leastIdx = i;
-            }
-        }
-    }
-    if(leastIdx == -1) return NULL;
-    return &table[leastIdx];
-}
 
 void initTable(void) {
     makeVariable("x");
@@ -348,13 +314,7 @@ void statement(void) {
     int result;
 
     if (match(ENDFILE)) {
-        if(PRINTASSEMBLY){
-            for(int i = 0; i < 3; i++){
-                if(!table[i].isVar) printf("MOV r%d %d\n", i, table[i].val);
-                else printf("MOV r%d [%d]\n", i, table[i].mem);
-            }
-            puts("EXIT 0");
-        }
+        if(PRINTASSEMBLY) printAssemblyEOF();
         exit(0);
     } else if (match(END)) {
         if(PRINTARROW) printf(">> ");
@@ -362,12 +322,8 @@ void statement(void) {
     } else {
         retp = assign_expr();
         if (match(END)) {
-            if(PRINTASSEMBLY){
-                preprocess(retp);
-                // printAssembly_v0(retp);
-                printAssembly_v1(retp, 0);
-                clearReg();
-            }
+            if(PRINTASSEMBLY)
+                genAssembly(retp);
             if(PRINTEVAL) 
                 printf("%d\n", evaluateTree(retp));
             if(PRINTPRE) {
@@ -581,39 +537,19 @@ void err(ErrorType errorNum) {
 #include <string.h>
 
 
-int isRegUsed[REGSIZE];
-int preserveReg[REGSIZE];
-void releaseReg(int i){
-    if(i >= 0 && i <= 7) isRegUsed[i] = 0;
-}
-void clearReg(){
-    int i = 0;
-    for(i = 0; i < REGSIZE; i++){
-        if(isRegUsed[i] == 2) {
-            isRegUsed[i] = 0;
-        }
-    }
-}
-int getAvailibleReg(int isVar){
-    Symbol *reVar = NULL;
-    int i = 0;
-    for(i = 0; i < REGSIZE; i++){
-        if(!isRegUsed[i]) {
-            isRegUsed[i] = isVar ? 1 : 2;
-            return i;
-        }
-    }
-    // if no availible, release one
-    reVar = leastVar();
-    if(reVar != NULL){
-        i = reVar->reg;
-        printf("MOV [%d] r%d\n", reVar->mem, reVar->reg);
-        reVar->reg = -1;
-    } else {
 
+void genAssembly(BTNode *root){
+    preprocess(root);
+    // printAssembly_v0(root);
+    printAssembly_v1(root, 0);
+    clearReg();
+}
+void printAssemblyEOF(){
+    for(int i = 0; i < 3; i++){
+        if(!varTable[i].isVar) printf("MOV r%d %d\n", i, varTable[i].val);
+        else printf("MOV r%d [%d]\n", i, varTable[i].mem*4);
     }
-    
-    return i;
+    puts("EXIT 0");
 }
 
 int printAssembly_v0(BTNode *root){
@@ -625,7 +561,7 @@ int printAssembly_v0(BTNode *root){
         case ID:
             root->reg = getAvailibleReg(0);
             var = Variable(root->lexeme);
-            printf("MOV r%d [%d]\n", root->reg, var->mem);
+            printf("MOV r%d [%d]\n", root->reg, var->mem*4);
             var->cnt--;
             break;
         case INT:
@@ -635,21 +571,18 @@ int printAssembly_v0(BTNode *root){
         case ASSIGN:
             var = Variable(root->left->lexeme);
             rr = root->reg = printAssembly_v0(root->right);
-            printf("MOV [%d] r%d\n", var->mem, rr);
+            printf("MOV [%d] r%d\n", var->mem*4, rr);
             break;
         case INCDEC:
             var = Variable(root->right->lexeme);
             rr = root->reg = printAssembly_v0(root->right);
             lr = getAvailibleReg(0);
 
-            printf("MOV r%d 1\n", lr);
-            if (strcmp(root->lexeme, "++") == 0){
-                printf("ADD r%d r%d\n", root->reg, lr);
-            } else if (strcmp(root->lexeme, "--") == 0) {
-                printf("SUB r%d r%d\n", root->reg, lr);
-            }
+            printf("MOV r%d %d\n", lr, strcmp(root->lexeme, "++") == 0 ? 1 : -1);
+            printf("ADD r%d r%d\n", root->reg, lr);
+
             releaseReg(lr);
-            printf("MOV [%d] r%d\n", var->mem, root->reg);
+            printf("MOV [%d] r%d\n", var->mem*4, root->reg);
             break;
         case ADDSUB:
         case MULDIV:
@@ -693,7 +626,7 @@ int printAssembly_v1(BTNode *root, int use){
                     root->val = var->val;
                 } else {
                     root->reg = getAvailibleReg(0);
-                    printf("MOV r%d [%d]\n", root->reg, var->mem);
+                    printf("MOV r%d [%d]\n", root->reg, var->mem*4);
                 }
             }
             break;
@@ -710,7 +643,7 @@ int printAssembly_v1(BTNode *root, int use){
                 root->val = var->val = root->right->val;
                 root->reg = -1;
             } else {
-                printf("MOV [%d] r%d\n", var->mem, rr);
+                printf("MOV [%d] r%d\n", var->mem*4, rr);
                 if(!use) {
                     root->reg = -1;
                     releaseReg(rr);
@@ -731,10 +664,10 @@ int printAssembly_v1(BTNode *root, int use){
             } else {
                 rr = getAvailibleReg(0);
                 lr = getAvailibleReg(0);
-                printf("MOV r%d [%d]\n", rr, var->mem);
+                printf("MOV r%d [%d]\n", rr, var->mem*4);
                 printf("MOV r%d %d\n", lr, _num);
                 printf("ADD r%d r%d\n", rr, lr);
-                printf("MOV [%d] r%d\n", var->mem, rr);
+                printf("MOV [%d] r%d\n", var->mem*4, rr);
                 releaseReg(lr);
                 if(!use) {
                     releaseReg(rr);
@@ -770,14 +703,14 @@ int printAssembly_v1(BTNode *root, int use){
                     else if (strcmp(root->lexeme, "&") == 0) root->val = root->left->val & root->right->val;
                 } else {
                     if(lr == -1){
-                        root->reg = getAvailibleReg(0);
-                        printf("MOV r%d %d\n", root->reg, root->left->val);
-                    } 
+                        lr = getAvailibleReg(0);
+                        printf("MOV r%d %d\n", lr, root->left->val);
+                    }
+                    root->reg = lr;
                     if(rr == -1) {
                         rr = getAvailibleReg(0);
                         printf("MOV r%d %d\n", rr, root->right->val);
                     }
-
                     if (strcmp(root->lexeme, "+") == 0) printf("ADD ");
                     else if (strcmp(root->lexeme, "-") == 0) printf("SUB ");
                     else if (strcmp(root->lexeme, "*") == 0) printf("MUL ");
@@ -785,10 +718,9 @@ int printAssembly_v1(BTNode *root, int use){
                     else if (strcmp(root->lexeme, "^") == 0) printf("XOR ");
                     else if (strcmp(root->lexeme, "|") == 0) printf("OR ");
                     else if (strcmp(root->lexeme, "&") == 0) printf("AND ");
-
-                    printf("r%d r%d\n", lr, rr);
+                    
+                    printf("r%d r%d\n", root->reg, rr);
                     releaseReg(rr);
-                    root->reg = lr;
                 }
             }
     }
@@ -796,7 +728,7 @@ int printAssembly_v1(BTNode *root, int use){
     return root->reg;
 }
 
-// Build table, cnt appearance, error NOTFOUND, error DIVZERO
+// Build varTable, cnt appearance, error NOTFOUND, error DIVZERO
 int preprocess(BTNode *root){
     if(root == NULL) return;
 
@@ -922,32 +854,130 @@ void printPrefix(BTNode *root) {
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+
+
+int varCnt = 0;
+int memCnt = 0;
+Symbol varTable[TBLSIZE];
+int regTable[REGSIZE];
+int regToMem[R2MSIZE];
+int memTable[MEMSIZE];
+
+/*-------------------------------MEM---------------------------------*/
+
+void releaseMem(int i){
+    if(i >= 0 && i < memCnt)  memTable[i] = 0;
+}
+void clearMem(){
+    int i = 0;
+    for(i = 0; i < MEMSIZE; i++){
+        if(memTable[i] == 2) {
+            memTable[i] = 0;
+        }
+    }
+}
+int getAvailibleMem(int isVar){
+    int i = 0;
+    for(i = 0; i < MEMSIZE; i++){
+        if(memTable[i] == 0) {
+            memTable[i] = isVar ? 1 : 2;
+            return i;
+        }
+    }
+}
+
+/*-------------------------------REG---------------------------------*/
+
+void releaseReg(int i){
+    if(i >= 0 && i < REGSIZE) regTable[i] = 0;
+}
+void clearReg(){
+    int i = 0;
+    for(i = 0; i < REGSIZE; i++){
+        if(regTable[i] == 2) {
+            regTable[i] = 0;
+        }
+    }
+}
+int getAvailibleReg(int isVar){
+    Symbol *reVar = NULL;
+    int i = 0;
+    for(i = 0; i < REGSIZE; i++){
+        if(!regTable[i]) {
+            regTable[i] = isVar ? 1 : 2;
+            return i;
+        }
+    }
+    // if no availible, release one
+    reVar = leastVar();
+    if(reVar != NULL){
+        i = reVar->reg;
+        printf("MOV [%d] r%d\n", reVar->mem*4, reVar->reg);
+        reVar->reg = -1;
+    } else {
+
+    }
+    
+    return i;
+}
+
+/*-------------------------------VAR---------------------------------*/
+
+void makeVariable(char *str){
+    int i = 0;
+
+    for (i = 0; i < varCnt; i++) {
+        if (strcmp(str, varTable[i].name) == 0) {
+            return;
+        }
+    }
+    
+    if (varCnt >= TBLSIZE)
+        error(RUNOUT);
+    
+    strcpy(varTable[varCnt].name, str);
+    varTable[varCnt].val = 0;
+    varTable[varCnt].reg = -1;
+    varTable[varCnt].cnt = 1;
+    varTable[varCnt].isVar = 1;
+    varTable[varCnt].mem = getAvailibleMem(1);
+    varCnt++;
+    return;
+}
+
+Symbol *Variable(char *str){
+    int i = 0;
+
+    for (i = 0; i < varCnt; i++)
+        if (strcmp(str, varTable[i].name) == 0)
+            return &varTable[i];
+    return NULL;
+}
+
+Symbol *leastVar(){
+    int i = 0;
+    int minCnt = 0x7fffffff;
+    int leastIdx = -1;
+    for(i = 0; i < varCnt; i++){
+        if(varTable[i].reg != -1){
+            if(varTable[i].cnt < minCnt){
+                minCnt = varTable[i].cnt;
+                leastIdx = i;
+            }
+        }
+    }
+    if(leastIdx == -1) return NULL;
+    return &varTable[leastIdx];
+}
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 
-
-// This package is a calculator
-// It works like a Python interpretor
-// Example:
-// >> y = 2
-// >> z = 2
-// >> x = 3 * y + 4 / (2 * z)
-// It will print the answer of every line
-// You should turn it into an expression compiler
-// And print the assembly code according to the input
-
-// This is the grammar used in this package
-// You can modify it according to the spec and the slide
-// statement  :=  ENDFILE | END | expr END
-// expr    	  :=  term expr_tail
-// expr_tail  :=  ADDSUB term expr_tail | NiL
-// term 	  :=  factor term_tail
-// term_tail  :=  MULDIV factor term_tail| NiL
-// factor	  :=  INT | ADDSUB INT |
-//		   	      ID  | ADDSUB ID  | 
-//		   	      ID ASSIGN expr |
-//		   	      LPAREN expr RPAREN |
-//		   	      ADDSUB LPAREN expr RPAREN
 
 int main() {
     initTable();

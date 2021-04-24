@@ -1,3 +1,5 @@
+// Naive Added Utilities
+
 #ifndef __LEX__
 #define __LEX__
 

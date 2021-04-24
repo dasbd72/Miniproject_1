@@ -1,0 +1,25 @@
+x= -1
+y=2*5-3*5
+a = 1
+b = 1
+c = 1
+d = 1
+e = 1
+f = 1
+g = 1
+h = 1
+i = 1
+j = 1
+k = 1
+l = 1
+m = a + b + c + d
+n = m * e * f * g
+o = 8 / (i+j+k+l)
+x = x - o
+tmp = +c + -d + +(e) + -(f) + +(g + h) + -(i + j)
+++tmp
+++tmp
+--tmp
+zzz = --tmp
+aaa = (ccc = zzz)
+z = tmp + aaa

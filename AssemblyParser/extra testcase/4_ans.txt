@@ -1,0 +1,2 @@
+ERROR divisor is not equal to 0
+input_format_error

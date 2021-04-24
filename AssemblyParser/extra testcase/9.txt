@@ -1,0 +1,12 @@
+x = 10
+y = 33
+z = 57
+xx = x
+yy = y
+zz = z
+x = xx & x
+y= yy|y
+z = zz^z
+a=b=c=d=3*(1+2)
+a = -(b+c+d)
+z = z + (a | b ^ c & d - x * --y)
